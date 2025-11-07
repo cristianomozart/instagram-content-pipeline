@@ -1,0 +1,812 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \{\
+  "nodes": [\
+    \{\
+      "parameters": \{\
+        "updates": [\
+          "message"\
+        ],\
+        "additionalFields": \{\}\
+      \},\
+      "id": "124ff33d-4ab7-4b2c-8f14-4ba7059a2aa7",\
+      "name": "Telegram Trigger",\
+      "type": "n8n-nodes-base.telegramTrigger",\
+      "typeVersion": 1.2,\
+      "position": [\
+        -2240,\
+        272\
+      ],\
+      "webhookId": "7222b8fd-bd8b-4f76-9b05-2ea65924ae92",\
+      "credentials": \{\
+        "telegramApi": \{\
+          "id": "5uoP4G2VKuspNMag",\
+          "name": "Telegram account"\
+        \}\
+      \}\
+    \},\
+    \{\
+      "parameters": \{\
+        "jsCode": "// Extract Instagram URL from Telegram message\\nconst message = $input.item.json.message.text || '';\\n\\n// Instagram URL patterns\\nconst instagramRegex = /(?:https?:\\\\/\\\\/)?(?:www\\\\.)?instagram\\\\.com\\\\/(?:p|reel|reels|tv|stories)\\\\/([A-Za-z0-9_-]+)\\\\/?/gi;\\n\\nconst match = message.match(instagramRegex);\\n\\nif (match && match.length > 0) \{\\n  return [\{\\n    json: \{\\n      url: match[0],\\n      chatId: $input.item.json.message.chat.id,\\n      messageId: $input.item.json.message.message_id,\\n      originalMessage: message\\n    \}\\n  \}];\\n\} else \{\\n  return [\{\\n    json: \{\\n      url: null,\\n      chatId: $input.item.json.message.chat.id,\\n      messageId: $input.item.json.message.message_id,\\n      error: 'No Instagram URL found in message',\\n      originalMessage: message\\n    \}\\n  \}];\\n\}"\
+      \},\
+      "id": "b9b1130e-e63f-4e0d-abef-f149c202323a",\
+      "name": "Extract URL",\
+      "type": "n8n-nodes-base.code",\
+      "typeVersion": 2,\
+      "position": [\
+        -1792,\
+        256\
+      ]\
+    \},\
+    \{\
+      "parameters": \{\
+        "conditions": \{\
+          "options": \{\
+            "caseSensitive": true,\
+            "leftValue": "",\
+            "typeValidation": "strict",\
+            "version": 2\
+          \},\
+          "conditions": [\
+            \{\
+              "id": "url-exists",\
+              "operator": \{\
+                "type": "string",\
+                "operation": "exists",\
+                "singleValue": true\
+              \},\
+              "leftValue": "=\{\{ $json.url \}\}",\
+              "rightValue": ""\
+            \},\
+            \{\
+              "id": "url-not-null",\
+              "operator": \{\
+                "type": "string",\
+                "operation": "notEquals"\
+              \},\
+              "leftValue": "=\{\{ $json.url \}\}",\
+              "rightValue": "null"\
+            \}\
+          ],\
+          "combinator": "and"\
+        \},\
+        "options": \{\}\
+      \},\
+      "id": "7eec11c6-35fb-47e1-a4d4-9acc6bc35456",\
+      "name": "Check URL Found",\
+      "type": "n8n-nodes-base.if",\
+      "typeVersion": 2.2,\
+      "position": [\
+        -1616,\
+        256\
+      ]\
+    \},\
+    \{\
+      "parameters": \{\
+        "chatId": "=\{\{ $json.chatId \}\}",\
+        "text": "\uc0\u10060  No Instagram URL found in your message.\\n\\nPlease send a valid Instagram URL (post, reel, or story).\\n\\nExample: https://www.instagram.com/p/ABC123/",\
+        "additionalFields": \{\
+          "reply_to_message_id": "=\{\{ $json.messageId \}\}"\
+        \}\
+      \},\
+      "id": "b2a7b174-72b8-4cb3-907d-3cddf706f132",\
+      "name": "Error: No URL Found",\
+      "type": "n8n-nodes-base.telegram",\
+      "typeVersion": 1.2,\
+      "position": [\
+        -1296,\
+        528\
+      ],\
+      "webhookId": "84f1505d-b2e7-4c81-89c4-10345c02fb00",\
+      "credentials": \{\
+        "telegramApi": \{\
+          "id": "5uoP4G2VKuspNMag",\
+          "name": "Telegram account"\
+        \}\
+      \}\
+    \},\
+    \{\
+      "parameters": \{\
+        "method": "POST",\
+        "url": "https://api.apify.com/v2/acts/shu8hvrXbJbY3Eb9W/runs",\
+        "authentication": "genericCredentialType",\
+        "genericAuthType": "httpQueryAuth",\
+        "sendQuery": true,\
+        "queryParameters": \{\
+          "parameters": [\
+            \{\
+              "name": "token",\
+              "value": "=\{\{ $credentials.token \}\}"\
+            \}\
+          ]\
+        \},\
+        "sendBody": true,\
+        "bodyParameters": \{\
+          "parameters": [\
+            \{\
+              "name": "directUrls",\
+              "value": "=\{\{ [$json.url] \}\}"\
+            \}\
+          ]\
+        \},\
+        "options": \{\
+          "timeout": 30000\
+        \}\
+      \},\
+      "id": "a3994901-4b03-4c04-9a50-c0f9a145a9b1",\
+      "name": "Start Apify Run",\
+      "type": "n8n-nodes-base.httpRequest",\
+      "typeVersion": 4.2,\
+      "position": [\
+        -1424,\
+        128\
+      ],\
+      "credentials": \{\
+        "httpQueryAuth": \{\
+          "id": "EZwWpe8qNOXlyuG7",\
+          "name": "apify_credentials"\
+        \}\
+      \}\
+    \},\
+    \{\
+      "parameters": \{\
+        "amount": 10\
+      \},\
+      "id": "a522464e-6691-410a-a6d3-9428b68b852f",\
+      "name": "Initial Wait",\
+      "type": "n8n-nodes-base.wait",\
+      "typeVersion": 1.1,\
+      "position": [\
+        -1216,\
+        128\
+      ],\
+      "webhookId": "67eba1ca-bb21-4cd9-8d42-aa3a062ee13f"\
+    \},\
+    \{\
+      "parameters": \{\
+        "url": "=https://api.apify.com/v2/actor-runs/\{\{ $('Start Apify Run').item.json.data.id \}\}",\
+        "authentication": "genericCredentialType",\
+        "genericAuthType": "httpQueryAuth",\
+        "sendQuery": true,\
+        "queryParameters": \{\
+          "parameters": [\
+            \{\
+              "name": "token",\
+              "value": "=\{\{ $credentials.token \}\}"\
+            \}\
+          ]\
+        \},\
+        "options": \{\
+          "timeout": 30000\
+        \}\
+      \},\
+      "id": "0de1af0a-3dbd-47a1-9792-83bb594d4635",\
+      "name": "Poll Apify Status",\
+      "type": "n8n-nodes-base.httpRequest",\
+      "typeVersion": 4.2,\
+      "position": [\
+        -576,\
+        128\
+      ],\
+      "credentials": \{\
+        "httpQueryAuth": \{\
+          "id": "EZwWpe8qNOXlyuG7",\
+          "name": "apify_credentials"\
+        \}\
+      \}\
+    \},\
+    \{\
+      "parameters": \{\
+        "conditions": \{\
+          "options": \{\
+            "caseSensitive": true,\
+            "leftValue": "",\
+            "typeValidation": "strict",\
+            "version": 2\
+          \},\
+          "conditions": [\
+            \{\
+              "id": "status-succeeded",\
+              "operator": \{\
+                "type": "string",\
+                "operation": "equals"\
+              \},\
+              "leftValue": "=\{\{ $json.data.status \}\}",\
+              "rightValue": "SUCCEEDED"\
+            \}\
+          ],\
+          "combinator": "and"\
+        \},\
+        "options": \{\}\
+      \},\
+      "id": "86f5af59-de62-435f-94a8-9e6652654c00",\
+      "name": "Check Status",\
+      "type": "n8n-nodes-base.if",\
+      "typeVersion": 2.2,\
+      "position": [\
+        -336,\
+        256\
+      ]\
+    \},\
+    \{\
+      "parameters": \{\
+        "conditions": \{\
+          "options": \{\
+            "version": 2,\
+            "caseSensitive": true,\
+            "typeValidation": "strict"\
+          \},\
+          "combinator": "and",\
+          "conditions": [\
+            \{\
+              "id": "status-running",\
+              "operator": \{\
+                "type": "string",\
+                "operation": "equals"\
+              \},\
+              "leftValue": "=\{\{ $json.data.status \}\}",\
+              "rightValue": "RUNNING"\
+            \}\
+          ]\
+        \},\
+        "options": \{\}\
+      \},\
+      "id": "e5fbf589-1356-402f-a5e8-a6b21a5751f7",\
+      "name": "Check If Still Running",\
+      "type": "n8n-nodes-base.if",\
+      "typeVersion": 2.2,\
+      "position": [\
+        -1040,\
+        272\
+      ]\
+    \},\
+    \{\
+      "parameters": \{\},\
+      "id": "4ae442d0-0c42-4d77-979f-26b1bedaf00e",\
+      "name": "Wait Before Retry",\
+      "type": "n8n-nodes-base.wait",\
+      "typeVersion": 1.1,\
+      "position": [\
+        -832,\
+        256\
+      ],\
+      "webhookId": "5cc8196e-49a6-4f91-95b4-dae3f32a7a98"\
+    \},\
+    \{\
+      "parameters": \{\
+        "chatId": "=\{\{ $('Extract URL').item.json.chatId \}\}",\
+        "text": "=\uc0\u10060  Failed to scrape Instagram content.\\n\\nStatus: \{\{ $json.data.status \}\}\\nError: \{\{ $json.data.statusMessage || 'Unknown error' \}\}\\n\\nPlease try again or check if the URL is valid.",\
+        "additionalFields": \{\
+          "reply_to_message_id": "=\{\{ $('Extract URL').item.json.messageId \}\}"\
+        \}\
+      \},\
+      "id": "d496c6df-38dd-46fb-915d-8de226f153b3",\
+      "name": "Error: Apify Failed",\
+      "type": "n8n-nodes-base.telegram",\
+      "typeVersion": 1.2,\
+      "position": [\
+        -800,\
+        560\
+      ],\
+      "webhookId": "14fdac64-a53c-4dd8-b98f-ac9db91ef8fa",\
+      "credentials": \{\
+        "telegramApi": \{\
+          "id": "5uoP4G2VKuspNMag",\
+          "name": "Telegram account"\
+        \}\
+      \}\
+    \},\
+    \{\
+      "parameters": \{\
+        "url": "=https://api.apify.com/v2/datasets/\{\{ $json.data.defaultDatasetId \}\}/items",\
+        "authentication": "genericCredentialType",\
+        "genericAuthType": "httpQueryAuth",\
+        "sendQuery": true,\
+        "queryParameters": \{\
+          "parameters": [\
+            \{\
+              "name": "token",\
+              "value": "=\{\{ $credentials.apifyToken \}\}"\
+            \}\
+          ]\
+        \},\
+        "options": \{\
+          "timeout": 30000\
+        \}\
+      \},\
+      "id": "adc762bd-b726-43f9-8721-9921e57accec",\
+      "name": "Get Apify Results",\
+      "type": "n8n-nodes-base.httpRequest",\
+      "typeVersion": 4.2,\
+      "position": [\
+        -112,\
+        208\
+      ],\
+      "credentials": \{\
+        "httpQueryAuth": \{\
+          "id": "EZwWpe8qNOXlyuG7",\
+          "name": "apify_credentials"\
+        \}\
+      \}\
+    \},\
+    \{\
+      "parameters": \{\
+        "jsCode": "// Extract and combine all text content from Apify results\\nconst items = $input.all();\\nconst extractedContent = [];\\n\\nfor (const item of items) \{\\n  const data = item.json;\\n  \\n  // Collect all relevant text fields\\n  const contentParts = [];\\n  \\n  // Caption/description\\n  if (data.caption) \{\\n    contentParts.push('Caption: ' + data.caption);\\n  \}\\n  \\n  // Post text\\n  if (data.text) \{\\n    contentParts.push('Text: ' + data.text);\\n  \}\\n  \\n  // Video transcription\\n  if (data.videoTranscription) \{\\n    contentParts.push('Video Transcription: ' + data.videoTranscription);\\n  \}\\n  \\n  // Alt text\\n  if (data.alt) \{\\n    contentParts.push('Alt Text: ' + data.alt);\\n  \}\\n  \\n  // Comments (if available)\\n  if (data.latestComments && Array.isArray(data.latestComments)) \{\\n    const comments = data.latestComments\\n      .map(c => c.text)\\n      .filter(Boolean)\\n      .join(' | ');\\n    if (comments) \{\\n      contentParts.push('Comments: ' + comments);\\n    \}\\n  \}\\n  \\n  // Combine all parts\\n  if (contentParts.length > 0) \{\\n    const metadata = \{\\n      url: data.url || $('Extract URL').item.json.url,\\n      type: data.type || 'unknown',\\n      timestamp: new Date().toISOString(),\\n      ownerUsername: data.ownerUsername || 'unknown',\\n      likesCount: data.likesCount || 0\\n    \};\\n    \\n    extractedContent.push(\{\\n      text: contentParts.join('\\\\n\\\\n'),\\n      metadata: JSON.stringify(metadata)\\n    \});\\n  \}\\n\}\\n\\nif (extractedContent.length === 0) \{\\n  throw new Error('No text content could be extracted from the Instagram post');\\n\}\\n\\n// Return combined content\\nreturn [\{\\n  json: \{\\n    text: extractedContent.map(c => c.text).join('\\\\n\\\\n---\\\\n\\\\n'),\\n    metadata: extractedContent[0].metadata,\\n    chatId: $('Extract URL').item.json.chatId,\\n    messageId: $('Extract URL').item.json.messageId,\\n    contentCount: extractedContent.length\\n  \}\\n\}];"\
+      \},\
+      "id": "86245251-398a-425d-9cb4-0d1071c6766a",\
+      "name": "Parse Content",\
+      "type": "n8n-nodes-base.code",\
+      "typeVersion": 2,\
+      "position": [\
+        880,\
+        192\
+      ]\
+    \},\
+    \{\
+      "parameters": \{\
+        "jsonMode": "expressionData",\
+        "jsonData": "=\{\{ $json.text \}\}",\
+        "textSplittingMode": "custom",\
+        "options": \{\}\
+      \},\
+      "id": "dc0dc009-6800-430a-a217-e36f27788fbf",\
+      "name": "Default Data Loader",\
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",\
+      "typeVersion": 1.1,\
+      "position": [\
+        1296,\
+        464\
+      ]\
+    \},\
+    \{\
+      "parameters": \{\
+        "chunkOverlap": 200,\
+        "options": \{\}\
+      \},\
+      "id": "c69c0e06-0488-422a-9009-1e84ab36cc7e",\
+      "name": "Recursive Text Splitter",\
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",\
+      "typeVersion": 1,\
+      "position": [\
+        1296,\
+        672\
+      ]\
+    \},\
+    \{\
+      "parameters": \{\
+        "mode": "insert",\
+        "pineconeIndex": \{\
+          "__rl": true,\
+          "mode": "id",\
+          "value": "instagram-embeddings"\
+        \},\
+        "options": \{\}\
+      \},\
+      "id": "89ba958a-55b1-4982-8c47-6d60160645a8",\
+      "name": "Pinecone Vector Store",\
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",\
+      "typeVersion": 1.3,\
+      "position": [\
+        1152,\
+        192\
+      ],\
+      "credentials": \{\
+        "pineconeApi": \{\
+          "id": "PYmjQOJpTljbkLP5",\
+          "name": "yt-content-Pinecone"\
+        \}\
+      \}\
+    \},\
+    \{\
+      "parameters": \{\
+        "options": \{\}\
+      \},\
+      "id": "f831274e-a3d4-4348-a3a5-5348a8959985",\
+      "name": "Embeddings OpenAI",\
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",\
+      "typeVersion": 1.2,\
+      "position": [\
+        1120,\
+        448\
+      ],\
+      "credentials": \{\
+        "openAiApi": \{\
+          "id": "1sOem2XTu29Bry7P",\
+          "name": "OpenAi account"\
+        \}\
+      \}\
+    \},\
+    \{\
+      "parameters": \{\
+        "chatId": "=\{\{ $('Parse Content').item.json.chatId \}\}",\
+        "text": "=\uc0\u9989  Instagram content successfully processed!\\n\\n\u55357 \u56522  Extracted: \{\{ $('Parse Content').item.json.contentCount \}\} content item(s)\\n\u55357 \u56772 \u65039  Stored in Pinecone index: instagram-embeddings\\n\\nYour Instagram content is now searchable via embeddings!",\
+        "additionalFields": \{\
+          "reply_to_message_id": "=\{\{ $('Parse Content').item.json.messageId \}\}"\
+        \}\
+      \},\
+      "id": "a1558a62-d628-4bca-a92f-ee36bf14e0a5",\
+      "name": "Success Message",\
+      "type": "n8n-nodes-base.telegram",\
+      "typeVersion": 1.2,\
+      "position": [\
+        1472,\
+        192\
+      ],\
+      "webhookId": "160675c9-e6fe-43de-95d4-b0ebf3e73b7a",\
+      "credentials": \{\
+        "telegramApi": \{\
+          "id": "5uoP4G2VKuspNMag",\
+          "name": "Telegram account"\
+        \}\
+      \}\
+    \},\
+    \{\
+      "parameters": \{\
+        "conditions": \{\
+          "options": \{\
+            "caseSensitive": true,\
+            "leftValue": "",\
+            "typeValidation": "strict",\
+            "version": 2\
+          \},\
+          "conditions": [\
+            \{\
+              "id": "instagram-check",\
+              "operator": \{\
+                "type": "string",\
+                "operation": "contains"\
+              \},\
+              "leftValue": "=\{\{ $json.message.text \}\}",\
+              "rightValue": "instagram.com"\
+            \}\
+          ],\
+          "combinator": "and"\
+        \},\
+        "options": \{\}\
+      \},\
+      "id": "check-instagram-link",\
+      "name": "Check Instagram Link",\
+      "type": "n8n-nodes-base.if",\
+      "typeVersion": 2.2,\
+      "position": [\
+        -2016,\
+        272\
+      ]\
+    \},\
+    \{\
+      "parameters": \{\
+        "jsCode": "// Normalize Apify response to always be an array\\nlet items = $input.all()[0].json;\\n\\n// If single object, wrap in array\\nif (!Array.isArray(items)) \{\\n  items = [items];\\n\}\\n\\n// If empty array or no items, throw error\\nif (items.length === 0) \{\\n  throw new Error('Apify returned empty dataset');\\n\}\\n\\n// Return as array of items\\nreturn items.map(item => (\{ json: item \}));"\
+      \},\
+      "id": "normalize-response",\
+      "name": "Normalize Response",\
+      "type": "n8n-nodes-base.code",\
+      "typeVersion": 2,\
+      "position": [\
+        96,\
+        208\
+      ],\
+      "continueOnFail": true\
+    \},\
+    \{\
+      "parameters": \{\
+        "jsCode": "// Validate Instagram content has meaningful data\\nconst data = $input.first().json;\\n\\n// Check for any content fields (order of priority)\\nconst contentFields = [\\n  \{ name: 'caption', value: data.caption \},\\n  \{ name: 'text', value: data.text \},\\n  \{ name: 'videoTranscription', value: data.videoTranscription \},\\n  \{ name: 'alt', value: data.alt \}\\n];\\n\\n// Find first non-empty content field\\nconst validContent = contentFields.find(field => \\n  field.value && field.value.trim().length > 50\\n);\\n\\nif (!validContent) \{\\n  // Log what we got for debugging\\n  const foundFields = contentFields\\n    .filter(f => f.value)\\n    .map(f => `$\{f.name\}: $\{f.value.substring(0, 30)\}...`);\\n  \\n  throw new Error(\\n    `No substantial content found. ` +\\n    `Found fields: $\{foundFields.join(', ') || 'none'\}`\\n  );\\n\}\\n\\n// Pass through if valid\\nreturn [$input.first()];"\
+      \},\
+      "id": "validate-content",\
+      "name": "Validate Content",\
+      "type": "n8n-nodes-base.code",\
+      "typeVersion": 2,\
+      "position": [\
+        320,\
+        208\
+      ],\
+      "continueOnFail": true\
+    \},\
+    \{\
+      "parameters": \{\
+        "conditions": \{\
+          "options": \{\
+            "caseSensitive": true,\
+            "leftValue": "",\
+            "typeValidation": "strict",\
+            "version": 2\
+          \},\
+          "conditions": [\
+            \{\
+              "id": "has-error",\
+              "leftValue": "=\{\{ $json.error \}\}",\
+              "rightValue": "",\
+              "operator": \{\
+                "type": "object",\
+                "operation": "notExists",\
+                "singleValue": true\
+              \}\
+            \}\
+          ],\
+          "combinator": "and"\
+        \},\
+        "options": \{\}\
+      \},\
+      "id": "check-validation-error",\
+      "name": "Check Validation Error",\
+      "type": "n8n-nodes-base.if",\
+      "typeVersion": 2.2,\
+      "position": [\
+        528,\
+        208\
+      ]\
+    \},\
+    \{\
+      "parameters": \{\
+        "chatId": "=\{\{ $('Extract URL').item.json.chatId \}\}",\
+        "text": "=\uc0\u10060  No content extracted from Instagram.\\n\\nError: \{\{ $json.error.message \}\}\\n\\nThis might happen if:\\n- The post has no text/caption (photos without descriptions)\\n- Content is too short\\n- The URL is invalid\\n\\nPlease try a different post.",\
+        "additionalFields": \{\
+          "reply_to_message_id": "=\{\{ $('Extract URL').item.json.messageId \}\}"\
+        \}\
+      \},\
+      "id": "eb0a80c5-1139-4a0b-ae24-b8b4b333b21b",\
+      "name": "Error: No Results",\
+      "type": "n8n-nodes-base.telegram",\
+      "typeVersion": 1.2,\
+      "position": [\
+        768,\
+        400\
+      ],\
+      "webhookId": "4b446d63-f8d6-442e-96f9-df1431310be2",\
+      "credentials": \{\
+        "telegramApi": \{\
+          "id": "5uoP4G2VKuspNMag",\
+          "name": "Telegram account"\
+        \}\
+      \}\
+    \}\
+  ],\
+  "connections": \{\
+    "Telegram Trigger": \{\
+      "main": [\
+        [\
+          \{\
+            "node": "Check Instagram Link",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Extract URL": \{\
+      "main": [\
+        [\
+          \{\
+            "node": "Check URL Found",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Check URL Found": \{\
+      "main": [\
+        [\
+          \{\
+            "node": "Start Apify Run",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ],\
+        [\
+          \{\
+            "node": "Error: No URL Found",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Start Apify Run": \{\
+      "main": [\
+        [\
+          \{\
+            "node": "Initial Wait",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Initial Wait": \{\
+      "main": [\
+        [\
+          \{\
+            "node": "Poll Apify Status",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Poll Apify Status": \{\
+      "main": [\
+        [\
+          \{\
+            "node": "Check Status",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Check Status": \{\
+      "main": [\
+        [\
+          \{\
+            "node": "Get Apify Results",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ],\
+        [\
+          \{\
+            "node": "Check If Still Running",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Check If Still Running": \{\
+      "main": [\
+        [\
+          \{\
+            "node": "Wait Before Retry",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ],\
+        [\
+          \{\
+            "node": "Error: Apify Failed",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Wait Before Retry": \{\
+      "main": [\
+        [\
+          \{\
+            "node": "Poll Apify Status",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Get Apify Results": \{\
+      "main": [\
+        [\
+          \{\
+            "node": "Normalize Response",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Parse Content": \{\
+      "main": [\
+        [\
+          \{\
+            "node": "Pinecone Vector Store",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Default Data Loader": \{\
+      "ai_document": [\
+        [\
+          \{\
+            "node": "Pinecone Vector Store",\
+            "type": "ai_document",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Recursive Text Splitter": \{\
+      "ai_textSplitter": [\
+        [\
+          \{\
+            "node": "Default Data Loader",\
+            "type": "ai_textSplitter",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Pinecone Vector Store": \{\
+      "main": [\
+        [\
+          \{\
+            "node": "Success Message",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Embeddings OpenAI": \{\
+      "ai_embedding": [\
+        [\
+          \{\
+            "node": "Pinecone Vector Store",\
+            "type": "ai_embedding",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Check Instagram Link": \{\
+      "main": [\
+        [\
+          \{\
+            "node": "Extract URL",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Normalize Response": \{\
+      "main": [\
+        [\
+          \{\
+            "node": "Validate Content",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Validate Content": \{\
+      "main": [\
+        [\
+          \{\
+            "node": "Check Validation Error",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \},\
+    "Check Validation Error": \{\
+      "main": [\
+        [\
+          \{\
+            "node": "Parse Content",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ],\
+        [\
+          \{\
+            "node": "Error: No Results",\
+            "type": "main",\
+            "index": 0\
+          \}\
+        ]\
+      ]\
+    \}\
+  \},\
+  "pinData": \{\},\
+  "meta": \{\
+    "templateCredsSetupCompleted": true,\
+    "instanceId": "7a8fae4bdef8be14f4d46113552ce42849f5148e692dc0c87fceb9a2178a93db"\
+  \}\
+\}}
