@@ -191,7 +191,7 @@ return items.map(item => ({ json: item }));
 ### Issue #2: Incorrect IF Node Connections
 **Problem:** "Check Validation Error" IF node had both outputs (true/false) connected to the same nodes, causing all paths to execute regardless of validation result.
 
-**Solution:** Manually reconnected in n8n UI:
+**Solution:** Reconnected in n8n UI:
 - Output 0 (true/success) → Parse Content
 - Output 1 (false/error) → Error: No Results
 
