@@ -133,11 +133,14 @@ IF Node: Check Validation Error
 
 **n8n Nodes Used:**
 - HTTP Request (3 nodes)
-- Code (3 nodes)
-- IF (2 nodes)
-- Wait (1 node)
+- Code (4 nodes)
+- IF (5 nodes)
+- Wait (2 node)
 - Pinecone Vector Store (1 node)
-- Telegram (2 nodes)
+- Telegram (5 nodes)
+- OpenAI embeddings (1 node)
+- Data loader (1 node)
+- Text Spliter (1 node)
 
 **Programming:**
 - JavaScript (ES6) for Code nodes
